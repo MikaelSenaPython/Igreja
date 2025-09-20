@@ -1,0 +1,62 @@
+/* Ministerios Page Styles */
+.ministerios-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.category-hub {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.category-header:hover {
+    background-color: #f1f3f5;
+}
+
+.category-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.category-header .toggle-icon {
+    transition: transform 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.category-header.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.ministerios-table-container {
+    padding: 0;
+    max-height: 500px;
+    overflow-y: hidden;
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+}
+
+.ministerios-table-container.collapsed {
+    max-height: 0;
+    padding: 0;
+}
+
+.ministerios-table-container .data-table tbody tr.selected {
+    background-color: rgba(25, 118, 210, 0.1);
+    border-left: 4px solid var(--primary-color);
+}

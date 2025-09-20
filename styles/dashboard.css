@@ -1,0 +1,361 @@
+/* Dashboard Specific Styles */
+.dashboard-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    background-color: var(--surface-color);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    align-items: center;
+}
+
+.dashboard-filters .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    white-space: nowrap;
+}
+
+.dashboard-filters .btn:last-child {
+    margin-left: auto;
+}
+
+/* KPI Grid */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+    border-left: 4px solid var(--border-color);
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.kpi-card.success {
+    border-left-color: var(--success-color);
+}
+
+.kpi-card.danger {
+    border-left-color: var(--danger-color);
+}
+
+.kpi-card.info {
+    border-left-color: var(--info-color);
+}
+
+.kpi-card.primary {
+    border-left-color: var(--primary-color);
+}
+
+.kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(25, 118, 210, 0.1);
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.kpi-card.success .kpi-icon {
+    background-color: rgba(56, 142, 60, 0.1);
+    color: var(--success-color);
+}
+
+.kpi-card.danger .kpi-icon {
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--danger-color);
+}
+
+.kpi-card.info .kpi-icon {
+    background-color: rgba(2, 136, 209, 0.1);
+    color: var(--info-color);
+}
+
+.kpi-content {
+    flex: 1;
+}
+
+.kpi-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-value {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+/* Charts Section */
+.dashboard-charts {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.chart-tabs {
+    display: flex;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chart-tabs .tab-btn {
+    padding: 1rem 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    border-bottom: 3px solid transparent;
+}
+
+.chart-tabs .tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background-color: var(--surface-color);
+}
+
+.chart-tabs .tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-content {
+    padding: 2rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Composition Charts */
+.composition-charts {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.chart-half {
+    flex: 1;
+    text-align: center;
+}
+
+.chart-half h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.chart-half .chart-container {
+    height: 300px;
+    margin-bottom: 1rem;
+}
+
+.chart-details {
+    text-align: left;
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.chart-details h5 {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.875rem;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.detail-value {
+    color: var(--text-secondary);
+}
+
+.detail-percentage {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* Dashboard Table */
+.dashboard-table {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.dashboard-table h3 {
+    margin: 0;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-table .table-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.dashboard-table .data-table {
+    margin: 0;
+}
+
+.dashboard-table .data-table tbody tr.entrada {
+    border-left: 4px solid var(--success-color);
+}
+
+.dashboard-table .data-table tbody tr.saida {
+    border-left: 4px solid var(--danger-color);
+}
+
+/* --- INÍCIO DA CORREÇÃO --- */
+/* Transaction Type and Value Colors */
+.transaction-entrada,
+.transaction-value.positive {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.transaction-saida,
+.transaction-value.negative {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+/* --- FIM DA CORREÇÃO --- */
+
+
+/* Responsive Dashboard */
+@media (max-width: 1024px) {
+    .composition-charts {
+        flex-direction: column;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-filters {
+        justify-content: center;
+    }
+    
+    .dashboard-filters .btn:last-child {
+        margin-left: 0;
+        margin-top: 1rem;
+        order: -1;
+        width: 100%;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .kpi-card {
+        text-align: center;
+        flex-direction: column;
+        padding: 2rem 1.5rem;
+    }
+    
+    .kpi-icon {
+        margin-bottom: 1rem;
+    }
+    
+    .chart-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .chart-tabs .tab-btn {
+        padding: 1rem 1.5rem;
+        min-width: 150px;
+    }
+    
+    .tab-content {
+        padding: 1rem;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .chart-half .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-filters {
+        padding: 1rem;
+    }
+    
+    .dashboard-filters .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-table h3 {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}

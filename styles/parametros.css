@@ -1,0 +1,69 @@
+/* Parametros Page Styles */
+.parametros-container {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.param-tabs {
+    display: flex;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.param-tabs .tab-btn {
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* --- INÍCIO DA CORREÇÃO --- */
+.param-tab-content {
+    padding: 1.5rem;
+    display: none; /* Esconde todas as abas por padrão */
+}
+
+.param-tab-content.active {
+    display: block; /* Mostra apenas a aba que tiver a classe .active */
+}
+/* --- FIM DA CORREÇÃO --- */
+
+.management-section {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    animation: fadeIn 0.3s ease-in-out; /* Adiciona uma animação suave na troca */
+}
+
+.management-actions {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    height: fit-content;
+}
+
+.management-actions h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.management-actions .form-group {
+    margin-bottom: 1rem;
+}
+
+.management-actions .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.management-actions .btn-group .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+.management-list .data-table-container {
+    height: calc(100vh - 350px);
+}

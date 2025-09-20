@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão Financeira</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/forms.css">
+    <link rel="stylesheet" href="styles/ministerios.css">
+    <link rel="stylesheet" href="styles/parametros.css">
+    <link rel="stylesheet" href="styles/controle-mensal.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+        <p>Carregando Sistema...</p>
+    </div>
+
+    <div id="loginScreen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <i class="fas fa-church"></i>
+                <h1>Sistema de Gestão Financeira</h1>
+                <p>Faça login para continuar</p>
+            </div>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Usuário:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        Lembrar de mim
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Entrar
+                </button>
+                
+                <div class="auth-links">
+                    <a href="#" id="forgotPasswordLink">Esqueci minha senha</a>
+                    <a href="#" id="registerLink">Registrar-se</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="registerScreen" class="auth-screen hidden">
+        <div class="auth-container">
+            <div class="auth-header">
+                <i class="fas fa-user-plus"></i>
+                <h1>Registro de Novo Usuário</h1>
+                <p>Preencha os dados para criar uma conta</p>
+            </div>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="regUsername">Nome de usuário:</label>
+                    <input type="text" id="regUsername" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">Senha:</label>
+                    <input type="password" id="regPassword" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirmar Senha:</label>
+                    <input type="password" id="regConfirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regRole">Função:</label>
+                    <select id="regRole" name="role" class="form-control" required>
+                        <option value="Secretario">Secretário</option>
+                        <option value="Tesoureiro">Tesoureiro</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Confirmar Registro
+                </button>
+                
+                <div class="auth-links">
+                    <a href="#" id="backToLoginLink">Voltar ao Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="recoveryScreen" class="auth-screen hidden">
+        <div class="auth-container">
+            <div class="auth-header">
+                <i class="fas fa-key"></i>
+                <h1>Recuperação de Senha</h1>
+                <p>Digite seu email para recuperar a senha</p>
+            </div>
+            
+            <form id="recoveryForm" class="auth-form">
+                <div class="form-group">
+                    <label for="recoveryEmail">Email:</label>
+                    <input type="email" id="recoveryEmail" name="email" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    Enviar Código
+                </button>
+                
+                <div class="auth-links">
+                    <a href="#" id="backToLoginFromRecovery">Voltar ao Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainApp" class="main-app hidden">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-church"></i>
+                <h3>Gestão Igreja</h3>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-section">
+                    <h4>ANÁLISE</h4>
+                    <ul>
+                        <li><a href="#dashboard" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                        <li><a href="#controle-mensal" data-page="controle-mensal"><i class="fas fa-calendar-check"></i> Controlo Mensal</a></li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section">
+                    <h4>LANÇAMENTOS</h4>
+                    <ul>
+                        <li><a href="#entradas" data-page="entradas"><i class="fas fa-plus-circle"></i> Registar Entrada</a></li>
+                        <li><a href="#saidas" data-page="saidas"><i class="fas fa-minus-circle"></i> Registar Saída</a></li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section">
+                    <h4>CADASTROS</h4>
+                    <ul>
+                        <li><a href="#pessoas" data-page="pessoas"><i class="fas fa-users"></i> Pessoas</a></li>
+                        <li><a href="#projetos" data-page="projetos"><i class="fas fa-project-diagram"></i> Projetos</a></li>
+                        <li><a href="#ministerios" data-page="ministerios"><i class="fas fa-hands-praying"></i> Ministérios</a></li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section admin-only">
+                    <h4>ADMINISTRAÇÃO</h4>
+                    <ul>
+                        <li><a href="#usuarios" data-page="usuarios"><i class="fas fa-user-cog"></i> Gerir Utilizadores</a></li>
+                        <li><a href="#logs" data-page="logs"><i class="fas fa-history"></i> Logs de Auditoria</a></li>
+                        <li><a href="#parametros" data-page="parametros"><i class="fas fa-cogs"></i> Parâmetros do Sistema</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <ul>
+                    <li><a href="#perfil" data-page="perfil"><i class="fas fa-user"></i> Meu Perfil</a></li>
+                    <li><a href="#configuracoes" data-page="configuracoes"><i class="fas fa-cog"></i> Configurações</a></li>
+                    <li><a href="#sobre" data-page="sobre"><i class="fas fa-info-circle"></i> Sobre</a></li>
+                    <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">Dashboard Financeiro</h1>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="userWelcome">Utilizador: Admin (Presidente)</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div id="dashboardPage" class="page active">
+                    <div class="dashboard-filters">
+                        <button class="btn btn-outline" data-period="annual">Anual (2024)</button>
+                        <button class="btn btn-outline" data-period="6months">Últimos 6 Meses</button>
+                        <button class="btn btn-outline" data-period="3months">Últimos 3 Meses</button>
+                        <button class="btn btn-outline" data-period="manual">Período Manual...</button>
+                        <button class="btn btn-outline" data-period="monthly">Análise Mensal...</button>
+                        <button class="btn btn-outline" data-period="compare">Comparar Meses...</button>
+                        <button class="btn btn-primary" id="exportDashboard">Exportar PDF</button>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon"><i class="fas fa-wallet"></i></div>
+                            <div class="kpi-content">
+                                <h3>Saldo Anterior</h3>
+                                <p class="kpi-value" id="saldoAnterior">R$ 0,00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card success">
+                            <div class="kpi-icon"><i class="fas fa-arrow-up"></i></div>
+                            <div class="kpi-content">
+                                <h3>Entradas Período</h3>
+                                <p class="kpi-value" id="entradasPeriodo">R$ 0,00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card danger">
+                            <div class="kpi-icon"><i class="fas fa-arrow-down"></i></div>
+                            <div class="kpi-content">
+                                <h3>Saídas Período</h3>
+                                <p class="kpi-value" id="saidasPeriodo">R$ 0,00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card info">
+                            <div class="kpi-icon"><i class="fas fa-balance-scale"></i></div>
+                            <div class="kpi-content">
+                                <h3>Saldo Período</h3>
+                                <p class="kpi-value" id="saldoPeriodo">R$ 0,00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card primary">
+                            <div class="kpi-icon"><i class="fas fa-piggy-bank"></i></div>
+                            <div class="kpi-content">
+                                <h3>Saldo Final</h3>
+                                <p class="kpi-value" id="saldoFinal">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-charts">
+                        <div class="chart-tabs">
+                            <button class="tab-btn active" data-tab="resumo">Resumo do Período</button>
+                            <button class="tab-btn" data-tab="composicao">Composição das Finanças</button>
+                        </div>
+                        
+                        <div class="tab-content active" id="resumoTab">
+                            <div class="chart-container">
+                                <canvas id="resumoChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="composicaoTab">
+                            <div class="composition-charts">
+                                <div class="chart-half">
+                                    <h4>Origem das Entradas</h4>
+                                    <canvas id="entradasPieChart"></canvas>
+                                    <div class="chart-details" id="entradasDetails"></div>
+                                </div>
+                                <div class="chart-half">
+                                    <h4>Destino das Saídas</h4>
+                                    <canvas id="saidasPieChart"></canvas>
+                                    <div class="chart-details" id="saidasDetails"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-table">
+                        <h3>Extrato Detalhado do Período</h3>
+                        <div class="table-container">
+                            <table id="extratoTable" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Mov.</th>
+                                        <th>Tipo / Categoria</th>
+                                        <th>Projeto</th>
+                                        <th>Valor (R$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pessoasPage" class="page">
+                    <div class="page-header">
+                        <h2>Gestão de Pessoas</h2>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" id="addPersonBtn">
+                                <i class="fas fa-plus"></i> Adicionar Nova Pessoa
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="content-grid">
+                        <div class="content-left">
+                            <div class="search-filters">
+                                <input type="text" id="personSearch" placeholder="Buscar pessoa por nome..." class="form-control">
+                            </div>
+                            
+                            <div class="data-table-container">
+                                <table id="pessoasTable" class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome Completo</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="content-right">
+                            <div class="details-panel" id="personDetailsPanel">
+                                <h3>Selecione uma pessoa</h3>
+                                <p>Informações de contato aparecerão aqui</p>
+                                
+                                <div class="person-tabs">
+                                    <button class="tab-btn active" data-tab="info">Informações Pessoais</button>
+                                    <button class="tab-btn" data-tab="groups">Ministérios e Grupos</button>
+                                </div>
+                                
+                                <div class="tab-content active" id="personInfoTab">
+                                    <div class="info-list">
+                                        <div class="info-item">
+                                            <strong>Status:</strong> <span id="personStatus">--</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Função Eclesiástica:</strong> <span id="personFunction">--</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Data de Nascimento:</strong> <span id="personBirthDate">--</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Estado Civil:</strong> <span id="personMaritalStatus">--</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Data de Batismo:</strong> <span id="personBaptismDate">--</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Membro Desde:</strong> <span id="personMemberSince">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="tab-content" id="personGroupsTab">
+                                    <div class="info-item">
+                                        <strong>Ministérios:</strong> <span id="personMinistries">Nenhum</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Etiquetas:</strong> <span id="personTags">Nenhuma</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="details-actions">
+                                    <button class="btn btn-primary" id="editPersonBtn">Editar</button>
+                                    <button class="btn btn-danger" id="deletePersonBtn">Excluir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="entradasPage" class="page">
+                    <div class="page-header">
+                        <h2>Registar Entradas</h2>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" id="addEntradaBtn">
+                                <i class="fas fa-plus"></i> Adicionar Entrada
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="filters-section">
+                        <div class="filters-row">
+                            <select id="entradaAnoFilter" class="form-control">
+                                <option value="">Todos os anos</option>
+                            </select>
+                            <select id="entradaMesFilter" class="form-control">
+                                <option value="">Todos os meses</option>
+                            </select>
+                            <select id="entradaTipoFilter" class="form-control">
+                                <option value="">Todos os tipos</option>
+                            </select>
+                            <select id="entradaProjetoFilter" class="form-control">
+                                <option value="">Todos os projetos</option>
+                            </select>
+                            <select id="entradaMinisterioFilter" class="form-control">
+                                <option value="">Todos os ministérios</option>
+                            </select>
+                            <button class="btn btn-outline" id="filterEntradasBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button class="btn btn-outline" id="clearEntradasFilterBtn">
+                                <i class="fas fa-broom"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table id="entradasTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Membro</th>
+                                    <th>Tipo</th>
+                                    <th>Projeto</th>
+                                    <th>Ministério</th>
+                                    <th>Valor (R$)</th>
+                                    <th>Registrado Por</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="saidasPage" class="page">
+                    <div class="page-header">
+                        <h2>Registar Saídas</h2>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" id="addSaidaBtn">
+                                <i class="fas fa-plus"></i> Adicionar Saída
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="filters-section">
+                        <div class="filters-row">
+                            <select id="saidaAnoFilter" class="form-control">
+                                <option value="">Todos os anos</option>
+                            </select>
+                            <select id="saidaMesFilter" class="form-control">
+                                <option value="">Todos os meses</option>
+                            </select>
+                            <select id="saidaCategoriaFilter" class="form-control">
+                                <option value="">Todas as categorias</option>
+                            </select>
+                            <select id="saidaProjetoFilter" class="form-control">
+                                <option value="">Todos os projetos</option>
+                            </select>
+                            <select id="saidaMinisterioFilter" class="form-control">
+                                <option value="">Todos os ministérios</option>
+                            </select>
+                            <button class="btn btn-outline" id="filterSaidasBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button class="btn btn-outline" id="clearSaidasFilterBtn">
+                                <i class="fas fa-broom"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table id="saidasTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Projeto</th>
+                                    <th>Ministério</th>
+                                    <th>Valor (R$)</th>
+                                    <th>Registrado Por</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="projetosPage" class="page">
+                    <div class="page-header">
+                        <h2>Gestão de Projetos</h2>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" id="addProjetoBtn">
+                                <i class="fas fa-plus"></i> Adicionar Novo Projeto
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table id="projetosTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome do Projeto</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="controleMensalPage" class="page">
+                    <div class="page-header">
+                        <h2>Controlo Mensal</h2>
+                    </div>
+                    <div class="filters-section">
+                        <div class="filters-row" style="justify-content: flex-start;">
+                            <label for="cmAnoFilter">Ano:</label>
+                            <select id="cmAnoFilter" class="form-control" style="max-width: 120px;"></select>
+                            <label for="cmMesFilter">Mês:</label>
+                            <select id="cmMesFilter" class="form-control" style="max-width: 150px;"></select>
+                        </div>
+                    </div>
+                    <div id="memberCardsContainer" class="member-cards-container">
+                        </div>
+                </div>
+
+                </div>
+
+                <div id="ministeriosPage" class="page">
+                    <div class="page-header">
+                        <h2>Painel de Gestão de Ministérios</h2>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" id="addMinisterioBtn">
+                                <i class="fas fa-plus"></i> Adicionar Ministério
+                            </button>
+                            <button class="btn btn-secondary" id="manageCategoriasBtn">
+                                Gerir Categorias
+                            </button>
+                        </div>
+                    </div>
+                    <div id="ministeriosContainer" class="ministerios-container">
+                        </div>
+                </div>
+
+                <div id="usuariosPage" class="page">
+                    <div class="page-header">
+                        <h2>Gerir Utilizadores</h2>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" id="addUserBtn">
+                                <i class="fas fa-user-plus"></i> Adicionar Utilizador
+                            </button>
+                        </div>
+                    </div>
+                    <div class="content-grid">
+                        <div class="content-left">
+                            <div class="data-table-container">
+                                <table id="usersTable" class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome de Utilizador</th>
+                                            <th>Função</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="content-right">
+                            <div class="details-panel" id="userDetailsPanel">
+                                <h3>Selecione um utilizador</h3>
+                                <p>Detalhes do utilizador aparecerão aqui.</p>
+                                <div class="info-list" id="userInfoList" style="display: none;">
+                                    <div class="info-item">
+                                        <strong>Email:</strong> <span id="userEmail">--</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Criado em:</strong> <span id="userCreatedAt">--</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Último Login:</strong> <span id="userLastLogin">--</span>
+                                    </div>
+                                </div>
+                                <div class="details-actions" id="userActions" style="display: none;">
+                                    <button class="btn btn-secondary" id="resetPasswordBtn">Resetar Senha</button>
+                                    <button class="btn btn-danger" id="toggleUserStatusBtn">Ativar/Desativar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="logsPage" class="page">
+                    <div class="page-header">
+                        <h2>Logs de Auditoria do Sistema</h2>
+                    </div>
+                    
+                    <div class="filters-section">
+                        <div class="filters-row">
+                            <select id="logAnoFilter" class="form-control">
+                                <option value="">Todos os Anos</option>
+                            </select>
+                            <select id="logMesFilter" class="form-control">
+                                <option value="">Todos os Meses</option>
+                            </select>
+                            <select id="logUserFilter" class="form-control">
+                                <option value="">Todos os Utilizadores</option>
+                            </select>
+                            <select id="logAcaoFilter" class="form-control">
+                                <option value="">Todas as Ações</option>
+                                <option value="LOGIN">Logins</option>
+                                <option value="USER_MANAGE">Gestão de Utilizadores</option>
+                                <option value="TRANSACTION">Transações</option>
+                            </select>
+                            <button class="btn btn-outline" id="filterLogsBtn">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                            <button class="btn btn-outline" id="clearLogsFilterBtn">
+                                <i class="fas fa-broom"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="data-table-container">
+                        <table id="logsTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data e Hora</th>
+                                    <th>Utilizador</th>
+                                    <th>Ação</th>
+                                    <th>Detalhes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="parametrosPage" class="page">
+                    <div class="page-header">
+                        <h2>Central de Listas e Categorias</h2>
+                    </div>
+                    <div class="parametros-container">
+                        <div class="param-tabs">
+                            <button class="tab-btn active" data-tab="tiposEntrada">Tipos de Entrada</button>
+                            <button class="tab-btn" data-tab="categoriasSaida">Categorias de Saída</button>
+                            <button class="tab-btn" data-tab="etiquetas">Etiquetas Pastorais</button>
+                        </div>
+                        <div class="param-tab-content active" data-tab-content="tiposEntrada">
+                            </div>
+                        <div class="param-tab-content" data-tab-content="categoriasSaida">
+                            </div>
+                        <div class="param-tab-content" data-tab-content="etiquetas">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="perfilPage" class="page">
+                    <div class="page-header">
+                        <h2>Meu Perfil</h2>
+                    </div>
+                    <div class="parametros-container"> <div class="param-tabs">
+                            <button class="tab-btn active" data-tab="changePassword">Alterar Senha</button>
+                            <button class="tab-btn" data-tab="myAssociations">Minhas Associações</button>
+                        </div>
+                        <div class="param-tab-content active" data-tab-content="changePassword">
+                            <div class="auth-form" style="max-width: 400px; margin: auto; padding-top: 2rem;">
+                                <div class="form-group">
+                                    <label for="currentPassword">Senha Atual:</label>
+                                    <input type="password" id="currentPassword" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newPassword">Nova Senha:</label>
+                                    <input type="password" id="newPassword" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmNewPassword">Confirmar Nova Senha:</label>
+                                    <input type="password" id="confirmNewPassword" class="form-control" required>
+                                </div>
+                                <button class="btn btn-primary" id="savePasswordBtn" style="width: 100%;">
+                                    <i class="fas fa-save"></i> Salvar Nova Senha
+                                </button>
+                            </div>
+                        </div>
+                        <div class="param-tab-content" data-tab-content="myAssociations">
+                            <div class="associations-grid" style="padding: 1rem;">
+                                <div class="association-section">
+                                    <h4>Ministérios em que participo:</h4>
+                                    <ul id="profileMinistriesList" class="info-list" style="gap: 1rem;">
+                                        </ul>
+                                </div>
+                                <div class="association-section">
+                                    <h4>Minhas Etiquetas / Grupos:</h4>
+                                    <ul id="profileEtiquetasList" class="info-list" style="gap: 1rem;">
+                                        </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="configuracoesPage" class="page">
+                    <div class="page-header">
+                        <h2>Configurações</h2>
+                    </div>
+                    <div class="form-section" style="max-width: 700px; margin: auto; background-color: var(--surface-color); padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--box-shadow);">
+                        
+                        <div class="admin-only">
+                            <h3>Informações da Igreja</h3>
+                            <form id="churchInfoForm">
+                                <div class="form-group">
+                                    <label for="churchName">Nome da Igreja:</label>
+                                    <input type="text" id="churchName" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="churchAddress">Endereço:</label>
+                                    <input type="text" id="churchAddress" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Informações</button>
+                            </form>
+                            <hr style="margin: 2rem 0;">
+                        </div>
+
+                        <h3>Gerenciamento de Dados</h3>
+                        <div class="btn-group" style="justify-content: flex-start;">
+                            <button class="btn btn-secondary" id="backupBtn"><i class="fas fa-download"></i> Fazer Backup dos Dados</button>
+                            <button class="btn btn-danger admin-only" id="restoreBtn"><i class="fas fa-upload"></i> Restaurar Backup</button>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 1rem;">
+                            Fazer um backup cria uma cópia de segurança de todos os seus dados.
+                            Restaurar um backup substituirá TODOS os dados atuais pelos dados do arquivo de backup. Use com cuidado.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="sobrePage" class="page">
+                    <div class="page-header">
+                        <h2>Sobre o Sistema</h2>
+                    </div>
+                    <div style="max-width: 800px; margin: 2rem auto; text-align: center;">
+                        
+                        <div class="auth-header" style="margin-bottom: 2rem; padding: 2rem; background-color: var(--surface-color); border-radius: var(--border-radius); box-shadow: var(--box-shadow);">
+                            <i class="fas fa-church" style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary-color);"></i>
+                            <h1>Sistema de Gestão Financeira</h1>
+                            <p style="font-size: 1.2rem; color: var(--text-secondary);">Versão 2.0</p>
+                        </div>
+                        
+                        <div style="text-align: left; background-color: var(--surface-color); padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--box-shadow);">
+                            <p>Este sistema foi desenvolvido para auxiliar na gestão financeira e administrativa de igrejas, facilitando o controle de entradas, saídas, membros e ministérios de forma integrada e eficiente.</p>
+                            
+                            <hr style="margin: 1.5rem 0; border-color: var(--border-color);">
+                            
+                            <h3>Desenvolvido por:</h3>
+                            <p><strong>Nome:</strong> Mikael</p>
+                            <p><strong>Contato:</strong> <a href="mailto:mikaelpython7@gmail.com" style="color: var(--primary-color);">mikaelpython7@gmail.com</a></p>
+                            
+                            <hr style="margin: 1.5rem 0; border-color: var(--border-color);">
+                            
+                            <h3>Tecnologias Utilizadas:</h3>
+                            <ul style="list-style: none; padding-left: 0;">
+                                <li><i class="fab fa-html5" style="color: #e34f26;"></i> HTML5</li>
+                                <li><i class="fab fa-css3-alt" style="color: #1572b6;"></i> CSS3 (com Variáveis e Flexbox/Grid)</li>
+                                <li><i class="fab fa-js-square" style="color: #f7df1e;"></i> JavaScript (ES6+)</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="personModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="personModalTitle">Adicionar Nova Pessoa</h2>
+                <button class="modal-close" id="closePersonModal">&times;</button>
+            </div>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" data-tab="dados">Dados Pessoais</button>
+                <button class="tab-btn" data-tab="associacoes">Associações</button>
+            </div>
+            
+            <form id="personForm">
+                <div class="tab-content active" id="dadosTab">
+                    <div class="form-grid">
+                        <div class="photo-section">
+                            <div class="photo-preview">
+                                <i class="fas fa-user"></i>
+                                <p>Sem Foto</p>
+                            </div>
+                            <button type="button" class="btn btn-outline">Selecionar Foto</button>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label for="nomeCompleto">Nome Completo:</label>
+                                    <input type="text" id="nomeCompleto" name="nomeCompleto" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="telefone">Telefone:</label>
+                                    <input type="tel" id="telefone" name="telefone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="endereco">Endereço:</label>
+                                    <input type="text" id="endereco" name="endereco">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dataNascimento">Data de Nascimento:</label>
+                                    <input type="date" id="dataNascimento" name="dataNascimento">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estadoCivil">Estado Civil:</label>
+                                    <select id="estadoCivil" name="estadoCivil">
+                                        <option value="Solteiro(a)">Solteiro(a)</option>
+                                        <option value="Casado(a)">Casado(a)</option>
+                                        <option value="Divorciado(a)">Divorciado(a)</option>
+                                        <option value="Viúvo(a)">Viúvo(a)</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dataBatismo">Data de Batismo:</label>
+                                    <input type="date" id="dataBatismo" name="dataBatismo">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dataCadastro">Membro Desde:</label>
+                                    <input type="date" id="dataCadastro" name="dataCadastro">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="status">Status:</label>
+                                    <select id="status" name="status">
+                                        <option value="Ativo">Ativo</option>
+                                        <option value="Inativo">Inativo</option>
+                                        <option value="Visitante">Visitante</option>
+                                        <option value="Transferido">Transferido</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="funcaoEclesiastica">Função Eclesiástica:</label>
+                                    <select id="funcaoEclesiastica" name="funcaoEclesiastica">
+                                        <option value="Membro">Membro</option>
+                                        <option value="Obreiro">Obreiro</option>
+                                        <option value="Diácono">Diácono</option>
+                                        <option value="Presbítero">Presbítero</option>
+                                        <option value="Evangelista">Evangelista</option>
+                                        <option value="Missionário">Missionário</option>
+                                        <option value="Pastor">Pastor</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="associacoesTab">
+                    <div class="associations-grid">
+                        <div class="association-section">
+                            <h4>Participa nos Ministérios:</h4>
+                            <div id="ministeriosList" class="checkboxes-list">
+                                </div>
+                        </div>
+                        
+                        <div class="association-section">
+                            <h4>Etiquetas / Grupos Pastorais:</h4>
+                            <div id="etiquetasList" class="checkboxes-list">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelPersonModal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="savePersonBtn">Salvar Ficha Completa</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="entradaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="entradaModalTitle">Adicionar Nova Entrada</h2>
+                <button class="modal-close" id="closeEntradaModal">&times;</button>
+            </div>
+            
+            <form id="entradaForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entradaData">Data:</label>
+                        <input type="date" id="entradaData" name="data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entradaValor">Valor (R$):</label>
+                        <input type="number" id="entradaValor" name="valor" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entradaTipo">Tipo:</label>
+                        <select id="entradaTipo" name="tipo" required>
+                            <option value="">Selecione um tipo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="entradaMembro">Membro:</label>
+                        <select id="entradaMembro" name="membroId">
+                            <option value="">Doador Anônimo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entradaProjeto">Projeto:</label>
+                        <select id="entradaProjeto" name="projetoId">
+                            <option value="">Nenhum projeto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="entradaMinisterio">Ministério:</label>
+                        <select id="entradaMinisterio" name="ministerioId">
+                            <option value="">Caixa Geral</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="entradaObservacoes">Observações:</label>
+                    <textarea id="entradaObservacoes" name="observacoes" rows="3"></textarea>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelEntradaModal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveEntradaBtn">Salvar Entrada</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saidaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="saidaModalTitle">Adicionar Nova Saída</h2>
+                <button class="modal-close" id="closeSaidaModal">&times;</button>
+            </div>
+            
+            <form id="saidaForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="saidaData">Data:</label>
+                        <input type="date" id="saidaData" name="data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="saidaValor">Valor (R$):</label>
+                        <input type="number" id="saidaValor" name="valor" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="saidaDescricao">Descrição:</label>
+                    <input type="text" id="saidaDescricao" name="descricao" required placeholder="Ex: Conta de luz, material de limpeza">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="saidaCategoria">Categoria:</label>
+                        <select id="saidaCategoria" name="categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="saidaProjeto">Projeto:</label>
+                        <select id="saidaProjeto" name="projetoId">
+                            <option value="">Nenhum projeto</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saidaMinisterio">Retirado do Caixa de:</label>
+                    <select id="saidaMinisterio" name="ministerioId">
+                        <option value="">Caixa Geral</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saidaObservacoes">Observações:</label>
+                    <textarea id="saidaObservacoes" name="observacoes" rows="2"></textarea>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelSaidaModal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveSaidaBtn">Salvar Saída</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ministerioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="ministerioModalTitle">Adicionar Novo Ministério</h2>
+                <button class="modal-close" id="closeMinisterioModal">&times;</button>
+            </div>
+            <form id="ministerioForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="ministerioNome">Nome do Ministério:</label>
+                        <input type="text" id="ministerioNome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ministerioCategoria">Categoria:</label>
+                        <select id="ministerioCategoria" name="categoriaId" required>
+                            </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelMinisterioModal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveMinisterioBtn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/pessoas.js"></script>
+    <script src="js/entradas.js"></script>
+    <script src="js/saidas.js"></script>
+    <script src="js/projetos.js"></script>
+    <script src="js/usuarios.js"></script>
+    <script src="js/ministerios.js"></script>
+    <script src="js/logs.js"></script>
+    <script src="js/parametros.js"></script>
+    <script src="js/perfil.js"></script>
+    <script src="js/configuracoes.js"></script>
+    <script src="js/controle-mensal.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/main.js"></script> </body>
+</body>
+</html>
