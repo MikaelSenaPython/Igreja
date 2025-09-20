@@ -1,4 +1,4 @@
-// js/entradas.js
+// js/entradas.js (CORRIGIDO)
 
 class EntradasManager {
     constructor(app) {
@@ -61,7 +61,6 @@ class EntradasManager {
         });
     }
 
-    // MELHORIA: Esta função agora atualiza os filtros dinâmicos
     async refreshFilterOptions() {
         try {
             const [tiposRes, projetosRes, ministeriosRes] = await Promise.all([
@@ -82,7 +81,6 @@ class EntradasManager {
     populateSelect(selectId, options, defaultLabel, valueKey = 'id', textKey = 'nome') {
         const select = document.getElementById(selectId);
         if (!select) return;
-        // Salva o valor atual para tentar restaurá-lo depois
         const currentValue = select.value;
         select.innerHTML = `<option value="">${defaultLabel}</option>`;
         options.forEach(option => {
@@ -91,7 +89,6 @@ class EntradasManager {
             opt.textContent = option[textKey];
             select.appendChild(opt);
         });
-        // Tenta restaurar o valor que estava selecionado
         select.value = currentValue;
     }
 
@@ -102,7 +99,7 @@ class EntradasManager {
         typeFilter.innerHTML = '<option value="">Todos os tipos</option>';
         tipos.forEach(tipo => {
             const option = document.createElement('option');
-            option.value = tipo.nome; // Filtro usa o nome
+            option.value = tipo.nome;
             option.textContent = tipo.nome;
             typeFilter.appendChild(option);
         });
@@ -137,7 +134,7 @@ class EntradasManager {
             if (tiposRes.success) this.populateSelect('entradaTipo', tiposRes.data, 'Selecione um tipo', 'nome', 'nome');
             if (projetosRes.success) this.populateSelect('entradaProjeto', projetosRes.data.filter(p => p.ativo), 'Nenhum projeto');
             if (ministeriosRes.success) this.populateSelect('entradaMinisterio', ministeriosRes.data, 'Caixa Geral');
-            if (pessoasRes.success) this.populateSelect('entradaMembro', pessoasRes.data.filter(p => p.status === 'Ativo'), 'Doador Anônimo');
+            if (pessoasRes.success) this.populateSelect('entradaMembro', pessoasRes.data.filter(p => p.status === 'Ativo'), 'Doador Anônimo', 'id', 'nomeCompleto');
             
             if (entradaData) {
                 document.getElementById('entradaTipo').value = entradaData.tipo;
@@ -152,9 +149,8 @@ class EntradasManager {
         }
     }
 
-    // MELHORIA: loadData agora atualiza os filtros antes de buscar os dados da tabela
     async loadData() {
-        await this.refreshFilterOptions(); // Atualiza os dropdowns de filtro
+        await this.refreshFilterOptions();
         try {
             const response = await this.app.api.getEntradas(this.filters);
             if (response.success) {
@@ -230,7 +226,6 @@ class EntradasManager {
         modal.classList.add('show');
         modal.style.display = 'flex';
         
-        // A função populateModalOptions já busca os dados mais recentes
         if (entradaId) {
             document.getElementById('entradaModalTitle').textContent = 'Editar Entrada';
             const entrada = this.currentEntradas.find(e => e.id === entradaId);
@@ -316,7 +311,10 @@ class EntradasManager {
     }
 
     closeEntradaModal() {
-        document.getElementById('entradaModal').classList.remove('show');
+        const modal = document.getElementById('entradaModal');
+        modal.classList.remove('show');
+        // CORREÇÃO: Adicionado para garantir que o modal seja escondido
+        modal.style.display = 'none'; 
         this.clearEntradaForm();
     }
 }

@@ -1,41 +1,36 @@
 // API Service - Simulates backend API calls with localStorage persistence
 class ApiService {
     constructor() {
-        /**
-         * O construtor é executado uma única vez quando a classe é criada.
-         * É o lugar perfeito para inicializar nossas listas de dados como arrays vazios.
-         * Isso GARANTE que elas nunca serão 'undefined', resolvendo a causa principal do erro.
-         */
-        this.membros = [];
-        this.dizimos = []; // Supondo que você tenha uma lista de registros de dízimos
-        this.ceias = [];   // Supondo que você tenha uma lista de participação na ceia
+        this.mockData = null;
+    }
 
-        // Chame aqui sua função principal que carrega todos os dados do sistema
-        // (seja do LocalStorage ou de um backend).
-        // Exemplo:
-        // this._carregarDadosIniciais();
-        // Carrega os dados logo na inicialização
-        this._loadData();
-        console.log("ApiService inicializada com listas de dados prontas.");
+    async init() {
+        try {
+            await this._loadData();
+            console.log("ApiService inicializada e dados carregados com sucesso.");
+            return true;
+        } catch (error) {
+            console.error("Falha crítica ao inicializar a ApiService:", error);
+            return false;
+        }
     }
     
-    // Carrega os dados do localStorage ou inicializa com padrão
-    _loadData() {
+    async _loadData() {
         const savedData = localStorage.getItem('churchMockData');
         if (savedData) {
             this.mockData = JSON.parse(savedData);
         } else {
             this.mockData = this.initializeMockData();
-            this._saveData(); // Salva o estado inicial no localStorage
+            this._saveData();
         }
     }
 
-    // Salva o estado atual dos dados no localStorage
     _saveData() {
         localStorage.setItem('churchMockData', JSON.stringify(this.mockData));
     }
 
     initializeMockData() {
+        // ... (o conteúdo desta função permanece o mesmo)
         return {
             users: [
                 { id: 1, username: 'Mikael', email: 'mikaelpython7@gmail.com', role: 'Presidente', password: '162408', active: true, createdAt: '2024-01-01T00:00:00Z', lastLogin: '2025-09-17T10:30:00Z' },
@@ -376,6 +371,7 @@ class ApiService {
         this.mockData.entradas.push(newEntrada);
         const details = `Nova Entrada (ID: ${newEntrada.id}): ${newEntrada.tipo}, Valor: R$ ${newEntrada.valor.toFixed(2)}`;
         this._addLog(username, 'ENTRADA_CRIADA', details);
+        this._saveData(); // CORREÇÃO: Adicionado para salvar os dados no localStorage
         return { success: true, data: newEntrada };
     }
 
@@ -434,6 +430,7 @@ class ApiService {
         this.mockData.saidas.push(newSaida);
         const details = `Nova Saída (ID: ${newSaida.id}): ${newSaida.descricao}, Valor: R$ ${newSaida.valor.toFixed(2)}`;
         this._addLog(username, 'SAIDA_CRIADA', details);
+        this._saveData(); // CORREÇÃO: Adicionado para salvar os dados no localStorage
         return { success: true, data: newSaida };
     }
 
@@ -578,47 +575,42 @@ class ApiService {
     }
 
     getControleMensal(ano, mes) {
-        // Passo 1: Verificação de segurança. Se a lista de membros não foi carregada,
-        // retorna um erro tratado em vez de quebrar a aplicação.
-        if (!this.membros) {
-            console.error("A lista de membros não foi carregada na ApiService.");
+        // CORREÇÃO: Verifica se o mockData e a lista de pessoas foram carregados
+        if (!this.mockData || !this.mockData.pessoas) {
+            console.error("A lista de membros (pessoas) não foi carregada na ApiService.");
             return { success: false, data: [] };
         }
 
-        // Garante que 'ano' e 'mes' sejam números para comparação
         const anoNumerico = parseInt(ano, 10);
         const mesNumerico = parseInt(mes, 10);
 
-        // Passo 2: Filtra apenas os membros com status 'Ativo'.
-        const membrosAtivos = this.membros.filter(m => m.status === 'Ativo');
+        // CORREÇÃO: Usa this.mockData.pessoas e filtra por status 'Ativo'
+        const membrosAtivos = this.mockData.pessoas.filter(p => p.status === 'Ativo');
 
-        // Passo 3: Mapeia os membros ativos para o formato que a tela precisa.
         const dadosControle = membrosAtivos.map(membro => {
-
-            // Para cada membro, verifica se existe um registro de dízimo para o período.
-            const entregouDizimo = this.dizimos.some(dizimo =>
-                dizimo.membroId === membro.id &&
-                parseInt(dizimo.ano, 10) === anoNumerico &&
-                parseInt(dizimo.mes, 10) === mesNumerico
+            // CORREÇÃO: Usa this.mockData.entradas para verificar os dízimos
+            const entregouDizimo = this.mockData.entradas.some(entrada =>
+                entrada.membroId === membro.id &&
+                entrada.tipo === 'Dízimo' &&
+                new Date(entrada.data).getFullYear() === anoNumerico &&
+                (new Date(entrada.data).getMonth() + 1) === mesNumerico
             );
 
-            // Para cada membro, verifica se existe um registro de participação na ceia.
-            const participouCeia = this.ceias.some(ceia =>
-                ceia.membroId === membro.id &&
+            // CORREÇÃO: Usa this.mockData.participacao_ceia
+            const participouCeia = this.mockData.participacao_ceia.some(ceia =>
+                ceia.pessoaId === membro.id &&
                 parseInt(ceia.ano, 10) === anoNumerico &&
                 parseInt(ceia.mes, 10) === mesNumerico
             );
 
-            // Retorna o objeto formatado que será usado para renderizar o card na tela.
             return {
                 id: membro.id,
-                nome: membro.nome,
-                dizimista: entregouDizimo, // true ou false
-                tomouCeia: participouCeia   // true ou false
+                nome: membro.nomeCompleto, // CORREÇÃO: Usa 'nomeCompleto'
+                dizimista: entregouDizimo,
+                tomouCeia: participouCeia
             };
         });
 
-        // Passo 4: Retorna o resultado final no formato esperado pelo 'controle-mensal.js'.
         return { success: true, data: dadosControle };
     }
     

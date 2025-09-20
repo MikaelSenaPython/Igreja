@@ -1,11 +1,10 @@
-// js/main.js (Versão Final Corrigida)
+// js/main.js (CORRIGIDO)
 
-// Main Application Controller
 class ChurchManagementApp {
     constructor() {
         this.currentUser = null;
         this.currentPage = 'dashboard';
-        this.api = new ApiService();
+        this.api = null; // Será instanciado em initializeApp
         this.initializedPages = new Set();
         
         this.initializeApp();
@@ -15,7 +14,13 @@ class ChurchManagementApp {
         try {
             this.showLoadingScreen();
             
-            // Instancia todos os gerenciadores
+            // 1. Instancia a API
+            this.api = new ApiService();
+            
+            // 2. MUDANÇA CRÍTICA: Espera a API carregar os dados ANTES de criar os outros módulos
+            await this.api.init();
+
+            // 3. AGORA, com os dados prontos, instancia todos os outros gerenciadores
             this.auth = new AuthManager(this);
             this.navigation = new NavigationManager(this);
             this.dashboard = new DashboardManager(this);
@@ -37,7 +42,7 @@ class ChurchManagementApp {
             
         } catch (error) {
             console.error('Error initializing app:', error);
-            this.showToast('Erro ao inicializar aplicação', 'error');
+            this.showToast('Erro grave ao inicializar aplicação', 'error');
             this.hideLoadingScreen();
         }
     }
@@ -47,7 +52,8 @@ class ChurchManagementApp {
         if (session) {
             try {
                 const userData = JSON.parse(session);
-                if (userData.expires && new Date(userData.expires) > new Date()) {
+                // A API já deve estar inicializada aqui, então podemos fazer login direto
+                if (userData.token) { // Supondo que a sessão tenha um token
                     this.currentUser = userData;
                     this.showMainApp();
                     return;
@@ -73,6 +79,10 @@ class ChurchManagementApp {
     }
 
     showLoginScreen() {
+        // Garante que o AuthManager está pronto para receber eventos
+        if (this.auth && typeof this.auth.init === 'function') {
+            this.auth.init();
+        }
         document.getElementById('loginScreen').classList.remove('hidden');
         document.getElementById('registerScreen').classList.add('hidden');
         document.getElementById('recoveryScreen').classList.add('hidden');
@@ -82,15 +92,11 @@ class ChurchManagementApp {
     showRegisterScreen() {
         document.getElementById('registerScreen').classList.remove('hidden');
         document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('recoveryScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.add('hidden');
     }
 
     showRecoveryScreen() {
         document.getElementById('recoveryScreen').classList.remove('hidden');
         document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('registerScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.add('hidden');
     }
 
     showMainApp() {
@@ -146,8 +152,6 @@ class ChurchManagementApp {
 
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         
-        // --- CORREÇÃO APLICADA AQUI ---
-        // Converte o pageId de kebab-case (ex: 'controle-mensal') para camelCase (ex: 'controleMensal')
         const pageIdAsCamelCase = pageId.replace(/-./g, x => x[1].toUpperCase());
         const targetPage = document.getElementById(pageIdAsCamelCase + 'Page');
         
@@ -194,10 +198,7 @@ class ChurchManagementApp {
     logout() {
         localStorage.removeItem('church_session');
         this.currentUser = null;
-        this.currentPage = 'dashboard';
-        this.initializedPages.clear();
-        this.showLoginScreen();
-        this.showToast('Logout realizado com sucesso', 'success');
+        window.location.reload(); // Recarrega a aplicação para o estado inicial
     }
 
     showToast(message, type = 'info', duration = 5000) {

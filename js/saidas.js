@@ -1,4 +1,4 @@
-// js/saidas.js
+// js/saidas.js (CORRIGIDO)
 
 class SaidasManager {
     constructor(app) {
@@ -185,7 +185,6 @@ class SaidasManager {
         }
         this.currentSaidas.forEach(saida => {
             const row = document.createElement('tr');
-            // A única alteração é adicionar a classe 'text-danger' na célula de descrição
             row.innerHTML = `
                 <td>${saida.id}</td>
                 <td>${formatDate(saida.data)}</td>
@@ -299,7 +298,10 @@ class SaidasManager {
     }
 
     closeSaidaModal() {
-        document.getElementById('saidaModal').classList.remove('show');
+        const modal = document.getElementById('saidaModal');
+        modal.classList.remove('show');
+        // CORREÇÃO: Adicionado para garantir que o modal seja escondido
+        modal.style.display = 'none';
         this.clearSaidaForm();
     }
 }
