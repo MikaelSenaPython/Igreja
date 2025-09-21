@@ -2,36 +2,30 @@
 class DashboardManager {
     constructor(app) {
         this.app = app;
-        this.charts = {};
-        this.currentPeriod = 'current';
+        // As instâncias dos gráficos de pizza foram movidas para a nova função
+        // para garantir que sejam tratadas corretamente.
+        this.charts = {}; 
     }
 
     init() {
         this.setupEventListeners();
-        this.setupChartTabs();
     }
 
     setupEventListeners() {
-        // Period filter buttons
+        // ... (Seus event listeners existentes para filtros e abas)
         const filterButtons = document.querySelectorAll('.dashboard-filters [data-period]');
         filterButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.handlePeriodFilter(e.target.dataset.period);
-            });
+            btn.addEventListener('click', (e) => this.handlePeriodFilter(e.target.dataset.period));
         });
 
-        // Export PDF button
         const exportBtn = document.getElementById('exportDashboard');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.exportToPDF());
         }
 
-        // Chart tabs
         const chartTabs = document.querySelectorAll('.chart-tabs .tab-btn');
         chartTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                this.switchChartTab(e.target.dataset.tab);
-            });
+            tab.addEventListener('click', (e) => this.switchChartTab(e.target.dataset.tab));
         });
     }
 
@@ -62,9 +56,16 @@ class DashboardManager {
             const response = await this.app.api.getDashboardData(this.currentPeriod);
             
             if (response.success) {
-                this.updateKPIs(response.data.kpis);
-                this.updateCharts(response.data);
-                this.updateTransactionsTable(response.data.transacoes);
+                const data = response.data; // Declarar a variável data
+
+                this.updateKPIs(data.kpis);
+                this.updateTransactionsTable(data.transacoes);
+                
+                // CORREÇÃO 1: A chamada para criar o gráfico de resumo foi restaurada.
+                this.createResumoChart(data.kpis);
+                
+                // Mantemos a chamada para os gráficos de composição.
+                this.renderCompositionCharts(data);
             } else {
                 this.app.showToast('Erro ao carregar dados do dashboard', 'error');
             }
@@ -88,9 +89,9 @@ class DashboardManager {
     }
 
     createResumoChart(kpis) {
-        const ctx = document.getElementById('resumoChart').getContext('2d');
+        const ctx = document.getElementById('resumoChart')?.getContext('2d');
+        if (!ctx) return;
         
-        // Destroy existing chart if it exists
         if (this.charts.resumo) {
             this.charts.resumo.destroy();
         }
@@ -100,27 +101,9 @@ class DashboardManager {
             data: {
                 labels: ['Saldo Anterior', 'Entradas', 'Saídas', 'Saldo do Mês', 'Saldo Final'],
                 datasets: [{
-                    data: [
-                        kpis.saldoAnterior,
-                        kpis.totalEntradas,
-                        kpis.totalSaidas,
-                        kpis.saldoMes,
-                        kpis.saldoFinal
-                    ],
-                    backgroundColor: [
-                        '#9E9E9E',
-                        '#2A8C55',
-                        '#D9534F',
-                        '#3498db',
-                        '#2F4F4F'
-                    ],
-                    borderColor: [
-                        '#757575',
-                        '#1B5E39',
-                        '#C9302C',
-                        '#2980b9',
-                        '#1A2F2F'
-                    ],
+                    data: [kpis.saldoAnterior, kpis.totalEntradas, kpis.totalSaidas, kpis.saldoMes, kpis.saldoFinal],
+                    backgroundColor: ['#9E9E9E', '#2A8C55', '#D9534F', '#3498db', '#2F4F4F'],
+                    borderColor: ['#757575', '#1B5E39', '#C9302C', '#2980b9', '#1A2F2F'],
                     borderWidth: 2
                 }]
             },
@@ -128,14 +111,10 @@ class DashboardManager {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
-                                return formatCurrency(context.raw);
-                            }
+                            label: (context) => formatCurrency(context.raw)
                         }
                     }
                 },
@@ -143,9 +122,7 @@ class DashboardManager {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: function(value) {
-                                return formatCurrency(value);
-                            }
+                            callback: (value) => formatCurrency(value)
                         }
                     }
                 }
@@ -259,73 +236,40 @@ class DashboardManager {
     updateTransactionsTable(transacoes) {
         const tbody = document.querySelector('#extratoTable tbody');
         if (!tbody) return;
-
         tbody.innerHTML = '';
 
-        if (transacoes.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center">Nenhuma transação no período</td>
-                </tr>
-            `;
+        if (!transacoes || transacoes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center">Nenhuma transação no período</td></tr>`;
             return;
         }
 
-        transacoes.slice(0, 50).forEach(transacao => { // Limit to 50 recent transactions
-            const row = document.createElement('tr');
-            row.className = transacao.tipo === 'Entrada' ? 'entrada' : 'saida';
-            
-            const projeto = transacao.nomeProjeto || '---';
-            const categoria = transacao.tipo === 'Entrada' ? transacao.tipo : transacao.categoria;
-            
-            row.innerHTML = `
-                <td>${formatDate(transacao.data)}</td>
-                <td>
-                    <span class="transaction-${transacao.tipo.toLowerCase()}">
-                        ${transacao.tipo}
-                    </span>
-                </td>
-                <td>${categoria}</td>
-                <td>${projeto}</td>
-                <td class="transaction-value ${transacao.tipo === 'Entrada' ? 'positive' : 'negative'}">
-                    ${formatCurrency(transacao.valor)}
-                </td>
+        transacoes.forEach(t => {
+            const isEntrada = t.hasOwnProperty('tipo');
+            const row = `
+                <tr>
+                    <td>${formatDate(t.data)}</td>
+                    <td class="${isEntrada ? 'text-success' : 'text-danger'}">${isEntrada ? 'Entrada' : 'Saída'}</td>
+                    <td>${isEntrada ? escapeHtml(t.tipo) : escapeHtml(t.categoria)}</td>
+                    <td>${t.nomeProjeto || '---'}</td>
+                    <td class="text-right">${formatCurrency(t.valor)}</td>
+                </tr>
             `;
-            
-            tbody.appendChild(row);
+            tbody.innerHTML += row;
         });
     }
 
     handlePeriodFilter(period) {
         this.currentPeriod = period;
-        
-        // Update active button
-        document.querySelectorAll('.dashboard-filters [data-period]').forEach(btn => {
-            btn.classList.remove('active');
-        });
+        document.querySelectorAll('.dashboard-filters [data-period]').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`[data-period="${period}"]`).classList.add('active');
-        
-        // Reload data
         this.loadData();
-        
-        // Show toast with selected period
-        const periodNames = {
-            'annual': 'Anual (2024)',
-            '6months': 'Últimos 6 Meses',
-            '3months': 'Últimos 3 Meses',
-            'manual': 'Período Manual',
-            'monthly': 'Análise Mensal',
-            'compare': 'Comparar Meses'
-        };
-        
-        if (periodNames[period]) {
-            this.app.showToast(`Período alterado para: ${periodNames[period]}`, 'info');
-        }
     }
 
     switchChartTab(tabId) {
-        // This is handled by setupChartTabs, but we can add additional logic here
-        console.log('Switched to tab:', tabId);
+        document.querySelectorAll('.dashboard-charts .tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.chart-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`${tabId}Tab`)?.classList.add('active');
+        document.querySelector(`.chart-tabs .tab-btn[data-tab="${tabId}"]`)?.classList.add('active');
     }
 
     generateColors(count, baseColor) {
@@ -384,5 +328,99 @@ class DashboardManager {
             }
         });
         this.charts = {};
+    }
+
+    // Cole este bloco de código dentro da sua classe DashboardManager
+
+    /**
+     * Renderiza os gráficos de pizza e as tabelas de detalhamento na aba "Composição".
+     * @param {object} data - O objeto de dados vindo da API (response.data).
+     */
+    renderCompositionCharts(data) {
+        const chartColors = [
+            '#1976d2', '#388e3c', '#d32f2f', '#f57c00', '#0288d1', 
+            '#5e35b1', '#6d4c41', '#e91e63', '#00796b', '#c2185b'
+        ];
+
+        const entradasData = data.entradasPorTipo || {};
+        const totalEntradas = Object.values(entradasData).reduce((sum, val) => sum + val, 0);
+        this.updateCompositionTable('entradasDetailsTable', entradasData, totalEntradas);
+        
+        if (this.charts.entradasPie) {
+            this.charts.entradasPie.destroy();
+        }
+        
+        const entradasCtx = document.getElementById('entradasPieChart')?.getContext('2d');
+        if (entradasCtx) {
+            this.charts.entradasPie = new Chart(entradasCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(entradasData),
+                    datasets: [{
+                        data: Object.values(entradasData),
+                        backgroundColor: chartColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        const saidasData = data.saidasPorCategoria || {};
+        const totalSaidas = Object.values(saidasData).reduce((sum, val) => sum + val, 0);
+        this.updateCompositionTable('saidasDetailsTable', saidasData, totalSaidas);
+
+        if (this.charts.saidasPie) {
+            this.charts.saidasPie.destroy();
+        }
+        
+        const saidasCtx = document.getElementById('saidasPieChart')?.getContext('2d');
+        if (saidasCtx) {
+            this.charts.saidasPie = new Chart(saidasCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(saidasData),
+                    datasets: [{
+                        data: Object.values(saidasData),
+                        backgroundColor: chartColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+    }
+
+    /**
+     * Preenche uma tabela de detalhamento de composição financeira.
+     * @param {string} tableId - O ID da tabela (sem o #).
+     * @param {object} dataObject - O objeto de dados (ex: {Dízimo: 500, Oferta: 200}).
+     * @param {number} total - O valor total para cálculo da porcentagem.
+     */
+    updateCompositionTable(tableId, dataObject, total) {
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        const sortedData = Object.entries(dataObject).sort(([, a], [, b]) => b - a);
+
+        for (const [label, value] of sortedData) {
+            const percentage = total > 0 ? (value / total * 100).toFixed(1) : 0;
+            // CORREÇÃO 2: Adicionadas as classes "text-right" para alinhar os valores
+            const row = `
+                <tr>
+                    <td>${escapeHtml(label)}</td>
+                    <td class="text-right">${formatCurrency(value)}</td>
+                    <td class="text-right">${percentage}%</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        }
     }
 }

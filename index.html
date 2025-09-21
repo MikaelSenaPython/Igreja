@@ -208,7 +208,7 @@
             <div class="content-area">
                 <div id="dashboardPage" class="page active">
                     <div class="dashboard-filters">
-                        <button class="btn btn-outline" data-period="annual">Anual (2024)</button>
+                        <button class="btn btn-outline" data-period="annual">Anual (2025)</button>
                         <button class="btn btn-outline" data-period="6months">Últimos 6 Meses</button>
                         <button class="btn btn-outline" data-period="3months">Últimos 3 Meses</button>
                         <button class="btn btn-outline" data-period="manual">Período Manual...</button>
@@ -265,23 +265,61 @@
                             <button class="tab-btn" data-tab="composicao">Composição das Finanças</button>
                         </div>
                         
+                        <!-- Aba de Resumo (Gráfico de Barras) -->
                         <div class="tab-content active" id="resumoTab">
                             <div class="chart-container">
                                 <canvas id="resumoChart"></canvas>
                             </div>
                         </div>
                         
+                        <!-- NOVA Aba de Composição (Gráficos de Pizza e Tabelas) -->
                         <div class="tab-content" id="composicaoTab">
-                            <div class="composition-charts">
-                                <div class="chart-half">
+                            <div class="composition-container">
+                                <!-- Seção das Entradas -->
+                                <div class="composition-section">
                                     <h4>Origem das Entradas</h4>
-                                    <canvas id="entradasPieChart"></canvas>
-                                    <div class="chart-details" id="entradasDetails"></div>
+                                    <div class="composition-chart-area">
+                                        <div class="chart-pie-container">
+                                            <canvas id="entradasPieChart"></canvas>
+                                        </div>
+                                        <div class="data-table-container compact">
+                                            <table class="data-table" id="entradasDetailsTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Tipo</th>
+                                                        <th>Valor (R$)</th>
+                                                        <th>%</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Os dados serão inseridos aqui via JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="chart-half">
+                                <!-- Seção das Saídas -->
+                                <div class="composition-section">
                                     <h4>Destino das Saídas</h4>
-                                    <canvas id="saidasPieChart"></canvas>
-                                    <div class="chart-details" id="saidasDetails"></div>
+                                    <div class="composition-chart-area">
+                                        <div class="chart-pie-container">
+                                            <canvas id="saidasPieChart"></canvas>
+                                        </div>
+                                        <div class="data-table-container compact">
+                                            <table class="data-table" id="saidasDetailsTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Categoria</th>
+                                                        <th>Valor (R$)</th>
+                                                        <th>%</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Os dados serão inseridos aqui via JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -301,7 +339,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    </tbody>
+                                    <!-- Os dados serão inseridos aqui via JS -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
