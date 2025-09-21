@@ -1,8 +1,14 @@
 // API Service - Simulates backend API calls with localStorage persistence
+// ADICIONE ESTE BLOCO DE CÓDIGO AQUI NO TOPO DO ARQUIVO
+const API_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+    ? 'http://127.0.0.1:3000' // Endereço para teste local com 'vercel dev'
+    : ''; // Vazio para usar o endereço do próprio site quando estiver online na Vercel
+    
 class ApiService {
     constructor() {
         this.mockData = null;
     }
+    
 
     async init() {
         try {
