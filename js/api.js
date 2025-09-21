@@ -670,7 +670,10 @@ class ApiService {
                 kpis: { saldoAnterior, totalEntradas, totalSaidas, saldoMes, saldoFinal },
                 entradasPorTipo,
                 saidasPorCategoria,
-                transacoes: [...entradas.map(e => ({ ...e, tipo: 'Entrada' })), ...saidas.map(s => ({ ...s, tipo: 'Saída' }))].sort((a, b) => new Date(b.data) - new Date(a.data))
+                transacoes: [
+                    ...entradas.map(e => ({ ...e, mov: 'Entrada' })),
+                    ...saidas.map(s => ({ ...s, mov: 'Saída' }))
+                ].sort((a, b) => new Date(b.data) - new Date(a.data))
             }
         };
     }

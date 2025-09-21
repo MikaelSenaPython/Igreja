@@ -244,12 +244,17 @@ class DashboardManager {
         }
 
         transacoes.forEach(t => {
-            const isEntrada = t.hasOwnProperty('tipo');
+            // Agora verificamos a propriedade 'mov' que criamos na API
+            const isEntrada = t.mov === 'Entrada';
+
             const row = `
                 <tr>
                     <td>${formatDate(t.data)}</td>
-                    <td class="${isEntrada ? 'text-success' : 'text-danger'}">${isEntrada ? 'Entrada' : 'Saída'}</td>
+                    
+                    <td class="${isEntrada ? 'text-success' : 'text-danger'}">${t.mov}</td>
+                    
                     <td>${isEntrada ? escapeHtml(t.tipo) : escapeHtml(t.categoria)}</td>
+                    
                     <td>${t.nomeProjeto || '---'}</td>
                     <td class="text-right">${formatCurrency(t.valor)}</td>
                 </tr>

@@ -956,3 +956,16 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/* Adicione este bloco ao seu main.css */
+
+/* Cores para textos */
+.text-success {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.text-danger {
+    color: var(--danger-color);
+    font-weight: 500;
+}
