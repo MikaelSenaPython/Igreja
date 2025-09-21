@@ -1,0 +1,15 @@
+{
+    "users": [
+        { "id": 1, "username": "Mikael", "email": "mikaelpython7@gmail.com", "role": "Presidente", "password": "162408", "active": true },
+        { "id": 2, "username": "Pastor", "email": "pastor@gmail.com", "role": "Presidente", "password": "1234", "active": true },
+        { "id": 3, "username": "Tesoureiro", "email": "tesoureiro@gmail.com", "role": "Tesoureiro", "password": "1234", "active": true },
+        { "id": 4, "username": "Secretario", "email": "secretario@gmail.com", "role": "Secretario", "password": "1234", "active": false }
+    ],
+    "pessoas": [
+        { "id": 1, "nomeCompleto": "João Silva", "status": "Ativo" },
+        { "id": 2, "nomeCompleto": "Maria Santos", "status": "Ativo" }
+    ],
+    "entradas": [],
+    "saidas": [],
+    "participacao_ceia": []
+}

@@ -110,24 +110,24 @@ class ApiService {
     }
 
     async register(userData) {
-        await this.delay(800);
-        const existingUser = this.mockData.users.find(u => u.username === userData.username || u.email === userData.email);
-        if (existingUser) {
-            return { success: false, error: 'Nome de usuário ou email já existe' };
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/usuarios/registrar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+            if (!response.ok) {
+                // Se o servidor responder com um erro, captura a mensagem
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Erro de servidor');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Erro ao registrar usuário:", error);
+            return { success: false, error: error.message };
         }
-        const newUser = {
-            id: this.mockData.users.length + 1,
-            username: userData.username,
-            email: userData.email,
-            password: userData.password,
-            role: userData.role,
-            active: true,
-            createdAt: new Date().toISOString(),
-            lastLogin: null
-        };
-        this.mockData.users.push(newUser);
-        this._addLog(userData.username, 'USER_REGISTERED', `Utilizador registado com a função: ${newUser.role}`);
-        return { success: true, data: { id: newUser.id, username: newUser.username, email: newUser.email, role: newUser.role } };
     }
 
     async recoverPassword(email) {
@@ -172,14 +172,38 @@ class ApiService {
     }
 
     async getUsers() {
-        await this.delay();
-        return { success: true, data: this.mockData.users };
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/usuarios`);
+            if (!response.ok) {
+                throw new Error('Não foi possível conectar ao servidor.');
+            }
+            const users = await response.json();
+            return { success: true, data: users };
+        } catch (error) {
+            console.error("Erro ao buscar usuários:", error);
+            return { success: false, error: 'Erro ao buscar usuários.' };
+        }
     }
 
     async getUser(id) {
-        await this.delay();
-        const user = this.mockData.users.find(u => u.id === parseInt(id));
-        return user ? { success: true, data: user } : { success: false, error: 'Utilizador não encontrado' };
+        try {
+            // Nota: No futuro, sua API em Python terá uma rota específica para buscar um só usuário
+            // Ex: /api/usuarios/1
+            // Por enquanto, vamos buscar todos e filtrar no frontend.
+            const response = await fetch('http://127.0.0.1:5000/api/usuarios');
+            if (!response.ok) {
+                throw new Error('Não foi possível conectar ao servidor.');
+            }
+            const users = await response.json();
+            const user = users.find(u => u.id === parseInt(id));
+            
+            return user 
+                ? { success: true, data: user } 
+                : { success: false, error: 'Utilizador não encontrado' };
+        } catch (error) {
+            console.error("Erro ao buscar usuário:", error);
+            return { success: false, error: 'Erro ao buscar usuário.' };
+        }
     }
 
     async toggleUserStatus(id, adminUsername) {
@@ -333,31 +357,48 @@ class ApiService {
     }
 
     async getEntradas(filters = {}) {
-        await this.delay();
-        let entradas = this.mockData.entradas.map(entrada => {
-            const membro = this.mockData.pessoas.find(p => p.id === entrada.membroId);
-            const projeto = this.mockData.projetos.find(p => p.id === entrada.projetoId);
-            const ministerio = this.mockData.ministerios.find(m => m.id === entrada.ministerioId);
-            const registrador = this.mockData.users.find(u => u.id === entrada.registradoPor);
-            return {
-                ...entrada,
-                nomeMembro: membro?.nomeCompleto || 'Doador Anônimo',
-                nomeProjeto: projeto?.nome || null,
-                nomeMinisterio: ministerio?.nome || 'Caixa Geral',
-                registradoPor: registrador?.username || 'Sistema Antigo'
-            };
-        });
-        if (filters.ano && filters.ano !== 'Todos') {
-            entradas = entradas.filter(e => e.data.startsWith(filters.ano));
+        try {
+            // 1. Busca a lista bruta de entradas da nova API em Python
+            const response = await fetch(`${API_BASE_URL}/api/entradas`);
+            if (!response.ok) {
+                throw new Error('Erro de rede ao buscar entradas.');
+            }
+            const fetchedEntradas = await response.json();
+
+            // 2. Mapeia os dados para adicionar os nomes, usando o this.mockData que já foi carregado
+            //    Esta é a mesma lógica que você já tinha, o que é ótimo!
+            let entradas = fetchedEntradas.map(entrada => {
+                const membro = this.mockData.pessoas.find(p => p.id === entrada.membroId);
+                const projeto = this.mockData.projetos.find(p => p.id === entrada.projetoId);
+                const ministerio = this.mockData.ministerios.find(m => m.id === entrada.ministerioId);
+                const registrador = this.mockData.users.find(u => u.id === entrada.registradoPor);
+                return {
+                    ...entrada,
+                    nomeMembro: membro?.nomeCompleto || 'Doador Anônimo',
+                    nomeProjeto: projeto?.nome || null,
+                    nomeMinisterio: ministerio?.nome || 'Caixa Geral',
+                    registradoPor: registrador?.username || 'Sistema Antigo'
+                };
+            });
+
+            // 3. Aplica os filtros no frontend (como já fazia antes)
+            if (filters.ano && filters.ano !== 'Todos') {
+                entradas = entradas.filter(e => e.data.startsWith(filters.ano));
+            }
+            if (filters.mes && filters.mes !== '') {
+                const mesStr = filters.mes.toString().padStart(2, '0');
+                entradas = entradas.filter(e => e.data.split('-')[1] === mesStr);
+            }
+            if (filters.tipo && filters.tipo !== 'Todos') {
+                entradas = entradas.filter(e => e.tipo === filters.tipo);
+            }
+
+            return { success: true, data: entradas };
+
+        } catch (error) {
+            console.error("Erro ao buscar entradas:", error);
+            return { success: false, error: 'Não foi possível carregar as entradas.' };
         }
-        if (filters.mes && filters.mes !== '') {
-            const mesStr = filters.mes.toString().padStart(2, '0');
-            entradas = entradas.filter(e => e.data.split('-')[1] === mesStr);
-        }
-        if (filters.tipo && filters.tipo !== 'Todos') {
-            entradas = entradas.filter(e => e.tipo === filters.tipo);
-        }
-        return { success: true, data: entradas };
     }
 
     async createEntrada(entradaData, username) {

@@ -60,14 +60,17 @@ class UsuariosManager {
         this.currentUsers.forEach(user => {
             const row = document.createElement('tr');
             row.dataset.userId = user.id;
-            const statusClass = user.active ? 'ativo' : 'inativo';
-            const statusText = user.active ? 'Ativo' : 'Inativo';
+
+            // Lógica para criar o HTML do status com cor
+            const statusHtml = user.active
+                ? `<span class="status-active">Ativo</span>`
+                : `<span class="status-inactive">Inativo</span>`;
 
             row.innerHTML = `
                 <td>${user.id}</td>
                 <td>${escapeHtml(user.username)}</td>
                 <td>${escapeHtml(user.role)}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${statusHtml}</td>
             `;
 
             row.addEventListener('click', () => this.selectUser(user.id));
