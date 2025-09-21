@@ -185,6 +185,7 @@ class SaidasManager {
         }
         this.currentSaidas.forEach(saida => {
             const row = document.createElement('tr');
+            row.className = 'tr-danger';
             row.innerHTML = `
                 <td>${saida.id}</td>
                 <td>${formatDate(saida.data)}</td>

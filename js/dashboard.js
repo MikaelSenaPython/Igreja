@@ -248,13 +248,10 @@ class DashboardManager {
             const isEntrada = t.mov === 'Entrada';
 
             const row = `
-                <tr>
+                <tr class="${isEntrada ? 'tr-success' : 'tr-danger'}">
                     <td>${formatDate(t.data)}</td>
-                    
                     <td class="${isEntrada ? 'text-success' : 'text-danger'}">${t.mov}</td>
-                    
                     <td>${isEntrada ? escapeHtml(t.tipo) : escapeHtml(t.categoria)}</td>
-                    
                     <td>${t.nomeProjeto || '---'}</td>
                     <td class="text-right">${formatCurrency(t.valor)}</td>
                 </tr>

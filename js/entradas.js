@@ -198,6 +198,7 @@ class EntradasManager {
         }
         this.currentEntradas.forEach(entrada => {
             const row = document.createElement('tr');
+            row.className = 'tr-success';
             row.innerHTML = `
                 <td>${entrada.id}</td>
                 <td>${formatDate(entrada.data)}</td>
