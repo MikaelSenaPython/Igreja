@@ -27,24 +27,32 @@ function parseCurrency(currencyString) {
 function formatDate(dateString) {
     if (!dateString) return '--';
     
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-BR');
-    } catch (error) {
-        return dateString;
+    // 1. Pega apenas a parte da data, ignorando a hora/fuso
+    // (ex: "2009-02-11T00:00:00Z" vira "2009-02-11")
+    const cleanDateString = dateString.split('T')[0];
+    
+    // 2. Quebra o "aaaa-mm-dd"
+    const parts = cleanDateString.split('-');
+    if (parts.length !== 3) {
+        return dateString; // Retorna o original se não for um formato esperado
     }
+    
+    const year = parts[0];
+    const month = parts[1];
+    const day = parts[2];
+    
+    // 3. Apenas reordena o texto, sem NENHUMA conversão de fuso
+    return `${day}/${month}/${year}`;
 }
-
 // Format date for input (YYYY-MM-DD)
 function formatDateForInput(dateString) {
     if (!dateString) return '';
     
-    try {
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
-    } catch (error) {
-        return '';
-    }
+    // O <input type="date"> espera "aaaa-mm-dd". 
+    // Esta função simplesmente garante que qualquer informação 
+    // de hora/fuso (ex: "...T00:00:00Z") seja removida.
+    const isoDate = dateString.split('T')[0];
+    return isoDate;
 }
 
 // Get current date in YYYY-MM-DD format
