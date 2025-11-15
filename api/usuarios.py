@@ -1,51 +1,37 @@
-# api/usuarios.py (ATUALIZADO)
+# /api/usuarios.py
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import json
+from flask import Blueprint, jsonify, request
+from . import database
 
-app = Flask(__name__)
-CORS(app)
+# Definição do blueprint para rotas de usuários
+bp = Blueprint('usuarios', __name__, url_prefix='/api/usuarios')
 
-# Caminho para o nosso arquivo de banco de dados
-DB_PATH = 'api/data.json'
-
-def read_data():
-    """Função para ler os dados do arquivo JSON."""
-    with open(DB_PATH, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def write_data(data):
-    """Função para salvar os dados no arquivo JSON."""
-    with open(DB_PATH, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-# --- ROTAS DA API ---
-
-@app.route('/api/usuarios', methods=['GET'])
+# Rota para listar todos os usuários
+@bp.route('', methods=['GET'])
 def get_users():
-    """Busca a lista de usuários do arquivo data.json."""
-    data = read_data()
-    return jsonify(data.get('users', []))
+    users = database.get_all_records('usuarios')
+    return jsonify(users)
 
-@app.route('/api/usuarios/registrar', methods=['POST'])
+# Rota para registrar um novo usuário
+@bp.route('/registrar', methods=['POST'])
 def register_user():
-    """Registra um novo usuário no arquivo data.json."""
-    new_user = request.json
-    data = read_data()
+    new_user_data = request.json
+    all_users = database.get_all_records('usuarios')
 
-    # Lógica para adicionar o novo usuário
-    new_id = max([u['id'] for u in data['users']]) + 1 if data['users'] else 1
+    new_id = max([int(u['id']) for u in all_users]) + 1 if all_users else 1
+
     user_to_add = {
         "id": new_id,
-        "username": new_user['username'],
-        "email": new_user['email'],
-        "password": new_user['password'], # Lembre-se que em um projeto real, a senha deve ser criptografada!
-        "role": new_user['role'],
+        "username": new_user_data.get('username'),
+        "email": new_user_data.get('email'),
+        "role": new_user_data.get('role'),
+        "password": new_user_data.get('password'),
         "active": True
     }
-    data['users'].append(user_to_add)
-    
-    write_data(data) # Salva os dados de volta no arquivo
 
-    return jsonify({"success": True, "data": user_to_add})
+    success = database.add_row('usuarios', user_to_add)
+
+    if success:
+        return jsonify({"success": True, "data": user_to_add})
+    else:
+        return jsonify({"success": False, "error": "Falha ao registrar usuário na planilha."}), 500

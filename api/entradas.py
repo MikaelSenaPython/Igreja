@@ -1,23 +1,47 @@
-# api/entradas.py
+# /api/entradas.py (VERSÃO CORRIGIDA)
 
-from flask import Flask, jsonify
+from flask import Blueprint, jsonify, request  # Mude 'Flask' para 'Blueprint'
 from flask_cors import CORS
-import json
+from . import database
 
-app = Flask(__name__)
-CORS(app)
+# Crie um blueprint em vez de um app
+bp = Blueprint('entradas', __name__, url_prefix='/api/entradas')
 
-# O caminho para o nosso "banco de dados"
-DB_PATH = 'api/data.json'
+# Remova a inicialização do app e CORS daqui
+# app = Flask(__name__)
+# CORS(app)
 
-def read_data():
-    """Função para ler os dados do arquivo JSON."""
-    with open(DB_PATH, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-@app.route('/api/entradas', methods=['GET'])
+@bp.route('', methods=['GET'])  # Mude a rota para o blueprint
 def get_entradas():
-    """Busca a lista de entradas do arquivo data.json."""
-    data = read_data()
-    # Retorna a lista que está sob a chave 'entradas' no JSON
-    return jsonify(data.get('entradas', []))
+    entradas = database.get_all_records('entradas')
+    return jsonify(entradas)
+
+@bp.route('', methods=['POST']) # Mude a rota para o blueprint
+def add_entrada():
+    nova_entrada = request.json
+    data = database.get_all_records('entradas')
+    users = database.get_all_records('usuarios')
+
+    registrador_username = nova_entrada.get('registradoPor')
+    registrador = next((user for user in users if user['username'] == registrador_username), None)
+
+    novo_id = max([int(e['id']) for e in data]) + 1 if data else 1
+
+    entrada_para_salvar = {
+        "id": novo_id,
+        "data": nova_entrada.get('data'),
+        "membroId": nova_entrada.get('membroId'),
+        "tipo": nova_entrada.get('tipo'),
+        "valor": nova_entrada.get('valor'),
+        "projetoId": nova_entrada.get('projetoId'),
+        "ministerioId": nova_entrada.get('ministerioId'),
+        "observacoes": nova_entrada.get('observacoes'),
+        "registradoPor": registrador['id'] if registrador else None
+    }
+
+    success = database.add_row('entradas', entrada_para_salvar)
+
+    if success:
+        return jsonify({"success": True, "data": entrada_para_salvar})
+    else:
+        return jsonify({"success": False, "error": "Falha ao salvar entrada na planilha."}), 500
