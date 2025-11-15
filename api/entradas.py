@@ -45,3 +45,39 @@ def add_entrada():
         return jsonify({"success": True, "data": entrada_para_salvar})
     else:
         return jsonify({"success": False, "error": "Falha ao salvar entrada na planilha."}), 500
+    
+# Em api/entradas.py (no final do arquivo)
+
+@bp.route('/<int:id>', methods=['PUT'])
+def update_entrada(id):
+    """Atualiza uma entrada existente."""
+    entrada_data = request.json
+    
+    # Prepara os dados para salvar (precisamos do ID)
+    # ATENÇÃO: O 'registradoPor' também precisa ser enviado pelo JS
+    # Mas, por simplicidade, vamos focar em atualizar os dados principais
+    
+    # O Python precisa do ID de volta no dicionário
+    entrada_data['id'] = id
+    
+    # (Você pode precisar re-buscar 'users' e recalcular 'registradorId' aqui se for editável)
+    # Por enquanto, estamos apenas salvando os dados como vieram
+    
+    success = database.update_row_by_id('entradas', id, entrada_data)
+
+    if success:
+        return jsonify({"success": True, "data": entrada_data})
+    else:
+        return jsonify({"success": False, "error": "Falha ao atualizar entrada."}), 500
+
+@bp.route('/<int:id>', methods=['DELETE'])
+def delete_entrada(id):
+    """Exclui uma entrada."""
+    try:
+        success = database.delete_row_by_id('entradas', id)
+        if success:
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Entrada não encontrada."}), 404
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500

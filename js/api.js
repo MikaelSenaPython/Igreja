@@ -224,53 +224,100 @@ class ApiService {
         return { success: false, error: 'Utilizador não encontrado' };
     }
 
+    // Em js/api.js
+
     async getPessoas(search = '') {
-        await this.delay();
-        let pessoas = this.mockData.pessoas;
-        if (search) {
-            pessoas = pessoas.filter(p => p.nomeCompleto.toLowerCase().includes(search.toLowerCase()));
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/pessoas`);
+            if (!response.ok) {
+                throw new Error('Não foi possível conectar ao servidor.');
+            }
+            let pessoas = await response.json();
+            
+            // O filtro continua sendo feito no frontend
+            if (search) {
+                pessoas = pessoas.filter(p => p.nomeCompleto.toLowerCase().includes(search.toLowerCase()));
+            }
+            return { success: true, data: pessoas };
+        
+        } catch (error) {
+            console.error("Erro ao buscar pessoas:", error);
+            return { success: false, error: 'Erro ao buscar pessoas.' };
         }
-        return { success: true, data: pessoas };
     }
 
     async getPessoa(id) {
-        await this.delay();
-        const pessoa = this.mockData.pessoas.find(p => p.id === parseInt(id));
-        return pessoa ? { success: true, data: pessoa } : { success: false, error: 'Pessoa não encontrada' };
+        // ESTA É A CORREÇÃO PARA O SEU BUG DO "JOÃO SILVA"
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/pessoas/${id}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Pessoa não encontrada');
+            }
+            const pessoa = await response.json();
+            
+            // O backend retorna o objeto da pessoa diretamente
+            return { success: true, data: pessoa };
+            
+        } catch (error) {
+            console.error("Erro ao buscar pessoa:", error);
+            return { success: false, error: error.message };
+        }
     }
     
     async createPessoa(pessoaData) {
-        await this.delay();
-        const newPessoa = {
-            id: this.mockData.pessoas.length > 0 ? Math.max(...this.mockData.pessoas.map(p => p.id)) + 1 : 1,
-            ...pessoaData,
-            dataCadastro: pessoaData.dataCadastro || getCurrentDate()
-        };
-        this.mockData.pessoas.push(newPessoa);
-        this._saveData();
-        return { success: true, data: newPessoa };
+        // SUBSTITUA A FUNÇÃO ANTIGA POR ESTA
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/pessoas`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(pessoaData)
+            });
+            const responseData = await response.json();
+            if (!response.ok || !responseData.success) {
+                throw new Error(responseData.error || 'Erro do servidor');
+            }
+            return responseData; // Retorna { success: true, data: { ... } }
+        } catch (error) {
+            console.error('Erro ao criar pessoa:', error);
+            return { success: false, error: error.message };
+        }
     }
 
     async updatePessoa(id, pessoaData) {
-        await this.delay();
-        const index = this.mockData.pessoas.findIndex(p => p.id === parseInt(id));
-        if (index !== -1) {
-            this.mockData.pessoas[index] = { ...this.mockData.pessoas[index], ...pessoaData };
-            this._saveData();
-            return { success: true, data: this.mockData.pessoas[index] };
+        // SUBSTITUA A FUNÇÃO ANTIGA POR ESTA
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/pessoas/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(pessoaData)
+            });
+            const responseData = await response.json();
+            if (!response.ok || !responseData.success) {
+                throw new Error(responseData.error || 'Erro do servidor');
+            }
+            return responseData; // Retorna { success: true, data: { ... } }
+        } catch (error) {
+            console.error('Erro ao atualizar pessoa:', error);
+            return { success: false, error: error.message };
         }
-        return { success: false, error: 'Pessoa não encontrada' };
     }
 
     async deletePessoa(id) {
-        await this.delay();
-        const index = this.mockData.pessoas.findIndex(p => p.id === parseInt(id));
-        if (index !== -1) {
-            this.mockData.pessoas.splice(index, 1);
-            this._saveData();
-            return { success: true };
+        // SUBSTITUA A FUNÇÃO ANTIGA POR ESTA
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/pessoas/${id}`, {
+                method: 'DELETE'
+            });
+            const responseData = await response.json();
+            if (!response.ok || !responseData.success) {
+                throw new Error(responseData.error || 'Erro do servidor');
+            }
+            return responseData; // Retorna { success: true }
+        } catch (error) {
+            console.error('Erro ao excluir pessoa:', error);
+            return { success: false, error: error.message };
         }
-        return { success: false, error: 'Pessoa não encontrada' };
     }
 
     async getMinisterios() {
@@ -364,20 +411,34 @@ class ApiService {
 
     async getEntradas(filters = {}) {
         try {
-            // 1. Busca a lista bruta de entradas da nova API em Python
-            const response = await fetch(`${API_BASE_URL}/api/entradas`);
-            if (!response.ok) {
+            // 1. Busca os dados REAIS de pessoas e entradas ao mesmo tempo
+            const [entradasResponse, pessoasResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/entradas`),
+                this.getPessoas() // Reutiliza a função que já busca do backend
+            ]);
+
+            if (!entradasResponse.ok) {
                 throw new Error('Erro de rede ao buscar entradas.');
             }
-            const fetchedEntradas = await response.json();
+            if (!pessoasResponse.success) {
+                throw new Error('Erro ao buscar lista de pessoas para o mapeamento.');
+            }
 
-            // 2. Mapeia os dados para adicionar os nomes, usando o this.mockData que já foi carregado
-            //    Esta é a mesma lógica que você já tinha, o que é ótimo!
+            const fetchedEntradas = await entradasResponse.json();
+            const todasPessoas = pessoasResponse.data; // Lista real de pessoas
+
+            // 2. Mapeia os dados usando a lista de pessoas REAL
             let entradas = fetchedEntradas.map(entrada => {
-                const membro = this.mockData.pessoas.find(p => p.id === entrada.membroId);
+                // CORREÇÃO: Usa a 'todasPessoas' (do Google Sheets)
+                const membro = todasPessoas.find(p => p.id === entrada.membroId);
+
+                // (O resto da sua lógica de mapeamento estava no mockData, 
+                // então vamos recriá-la aqui. Assumindo que você ainda tem 
+                // o mockData para 'projetos' e 'ministerios' por enquanto)
                 const projeto = this.mockData.projetos.find(p => p.id === entrada.projetoId);
                 const ministerio = this.mockData.ministerios.find(m => m.id === entrada.ministerioId);
                 const registrador = this.mockData.users.find(u => u.id === entrada.registradoPor);
+
                 return {
                     ...entrada,
                     nomeMembro: membro?.nomeCompleto || 'Doador Anônimo',
@@ -387,7 +448,7 @@ class ApiService {
                 };
             });
 
-            // 3. Aplica os filtros no frontend (como já fazia antes)
+            // 3. Aplica os filtros (como já fazia antes)
             if (filters.ano && filters.ano !== 'Todos') {
                 entradas = entradas.filter(e => e.data.startsWith(filters.ano));
             }
@@ -408,40 +469,105 @@ class ApiService {
     }
 
     async createEntrada(entradaData, username) {
-        await this.delay();
-        const currentUser = this.mockData.users.find(u => u.username === username);
-        const newEntrada = {
-            id: this.mockData.entradas.length > 0 ? Math.max(...this.mockData.entradas.map(e => e.id)) + 1 : 1,
+        // 1. Prepara os dados para enviar, adicionando o nome do usuário
+        const dataToSend = {
             ...entradaData,
-            registradoPor: currentUser ? currentUser.id : 0
+            registradoPor: username // O backend Python espera o username
         };
-        this.mockData.entradas.push(newEntrada);
-        const details = `Nova Entrada (ID: ${newEntrada.id}): ${newEntrada.tipo}, Valor: R$ ${newEntrada.valor.toFixed(2)}`;
-        this._addLog(username, 'ENTRADA_CRIADA', details);
-        this._saveData(); // CORREÇÃO: Adicionado para salvar os dados no localStorage
-        return { success: true, data: newEntrada };
+
+        try {
+            // 2. Envia os dados para a API Python usando 'fetch'
+            const response = await fetch(`${API_BASE_URL}/api/entradas`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok || !responseData.success) {
+                // Se o servidor der um erro (400, 500) ou a resposta for 'success: false'
+                console.error('Erro do servidor ao criar entrada:', responseData);
+                return { success: false, error: responseData.error || 'Erro do servidor' };
+            }
+
+            // 3. Sucesso! Os dados foram salvos no Google Sheets.
+            // (Opcional: podemos manter o log local)
+            const details = `Nova Entrada (ID: ${responseData.data.id}): ${responseData.data.tipo}, Valor: R$ ${parseFloat(responseData.data.valor).toFixed(2)}`;
+            this._addLog(username, 'ENTRADA_CRIADA', details);
+            this._saveData(); // Salva o log, não a entrada
+
+            // Retorna os dados que o backend acabou de salvar
+            return { success: true, data: responseData.data };
+
+        } catch (error) {
+            console.error('Erro de rede ao criar entrada:', error);
+            return { success: false, error: 'Erro de rede. Não foi possível salvar.' };
+        }
     }
 
     async updateEntrada(id, entradaData) {
-        await this.delay();
-        const index = this.mockData.entradas.findIndex(e => e.id === parseInt(id));
-        if (index !== -1) {
-            this.mockData.entradas[index] = { ...this.mockData.entradas[index], ...entradaData };
-            this._saveData();
-            return { success: true, data: this.mockData.entradas[index] };
+        // ATENÇÃO: O Python espera o ID DENTRO do objeto de dados
+        const dataToSend = {
+            ...entradaData,
+            id: parseInt(id) // Garante que o ID está no objeto
+        };
+
+        try {
+            // Envia os dados para a API Python usando 'fetch' (método PUT)
+            const response = await fetch(`${API_BASE_URL}/api/entradas/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok || !responseData.success) {
+                console.error('Erro do servidor ao atualizar entrada:', responseData);
+                return { success: false, error: responseData.error || 'Erro do servidor' };
+            }
+
+            // (Opcional) Adicionar log
+            this._addLog('UsuarioLogado', 'ENTRADA_ALTERADA', `Entrada ID ${id} foi alterada.`);
+            this._saveData(); // Salva o log
+
+            return { success: true, data: responseData.data };
+
+        } catch (error) {
+            console.error('Erro de rede ao atualizar entrada:', error);
+            return { success: false, error: 'Erro de rede. Não foi possível salvar.' };
         }
-        return { success: false, error: 'Entrada não encontrada' };
     }
 
     async deleteEntrada(id) {
-        await this.delay();
-        const index = this.mockData.entradas.findIndex(e => e.id === parseInt(id));
-        if (index !== -1) {
-            this.mockData.entradas.splice(index, 1);
-            this._saveData();
+        try {
+            // Envia a requisição de exclusão para a API (método DELETE)
+            const response = await fetch(`${API_BASE_URL}/api/entradas/${id}`, {
+                method: 'DELETE'
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok || !responseData.success) {
+                console.error('Erro do servidor ao excluir entrada:', responseData);
+                return { success: false, error: responseData.error || 'Erro do servidor' };
+            }
+
+            // (Opcional) Adicionar log
+            this._addLog('UsuarioLogado', 'ENTRADA_EXCLUÍDA', `Entrada ID ${id} foi excluída.`);
+            this._saveData(); // Salva o log
+
             return { success: true };
+
+        } catch (error) {
+            console.error('Erro de rede ao excluir entrada:', error);
+            return { success: false, error: 'Erro de rede. Não foi possível excluir.' };
         }
-        return { success: false, error: 'Entrada não encontrada' };
     }
 
     async getSaidas(filters = {}) {
@@ -621,51 +747,50 @@ class ApiService {
         return { success: true, data: this.mockData.etiquetas };
     }
 
-    getControleMensal(ano, mes) {
-        // CORREÇÃO: Verifica se o mockData e a lista de pessoas foram carregados
-        if (!this.mockData || !this.mockData.pessoas) {
-            console.error("A lista de membros (pessoas) não foi carregada na ApiService.");
+    async getControleMensal(ano, mes) {
+        try {
+            // 1. Busca os dados REAIS da API
+            const pessoasResponse = await this.getPessoas();
+            
+            // 2. Busca apenas as entradas do ano/mês selecionado
+            const entradasResponse = await this.getEntradas({ ano: ano, mes: mes, tipo: 'Dízimo' });
+
+            if (!pessoasResponse.success || !entradasResponse.success) {
+                throw new Error('Falha ao buscar dados de pessoas ou entradas.');
+            }
+
+            const membrosAtivos = pessoasResponse.data.filter(p => p.status === 'Ativo');
+            const dizimosDoMes = entradasResponse.data;
+
+            // 3. Processa os dados
+            const dadosControle = membrosAtivos.map(membro => {
+                
+                // Verifica se o membroId existe na lista de dízimos do mês
+                const entregouDizimo = dizimosDoMes.some(entrada =>
+                    entrada.membroId === membro.id 
+                );
+
+                // A lógica da Ceia ainda usa o mockData (precisará ser atualizada no futuro)
+                const participouCeia = (this.mockData.participacao_ceia || []).some(ceia =>
+                    ceia.pessoaId === membro.id &&
+                    parseInt(ceia.ano, 10) === parseInt(ano, 10) &&
+                    parseInt(ceia.mes, 10) === parseInt(mes, 10)
+                );
+
+                return {
+                    id: membro.id,
+                    nome: membro.nomeCompleto,
+                    dizimista: entregouDizimo,
+                    tomouCeia: participouCeia
+                };
+            });
+
+            return { success: true, data: dadosControle };
+
+        } catch (error) {
+            console.error("Erro ao montar controle mensal:", error);
             return { success: false, data: [] };
         }
-        
-        // ADICIONE ESTA VERIFICAÇÃO AQUI
-        if (!this.mockData.entradas) {
-            console.error("A lista de ENTRADAS não foi carregada na ApiService. Limpe o localStorage.");
-            // Retorna um array vazio para não quebrar a função .map() que vem depois
-            return { success: true, data: [] }; 
-        }
-
-        const anoNumerico = parseInt(ano, 10);
-        const mesNumerico = parseInt(mes, 10);
-
-        // CORREÇÃO: Usa this.mockData.pessoas e filtra por status 'Ativo'
-        const membrosAtivos = this.mockData.pessoas.filter(p => p.status === 'Ativo');
-
-        const dadosControle = membrosAtivos.map(membro => {
-            // CORREÇÃO: Usa this.mockData.entradas para verificar os dízimos
-            const entregouDizimo = this.mockData.entradas.some(entrada =>
-                entrada.membroId === membro.id &&
-                entrada.tipo === 'Dízimo' &&
-                new Date(entrada.data).getFullYear() === anoNumerico &&
-                (new Date(entrada.data).getMonth() + 1) === mesNumerico
-            );
-
-            // CORREÇÃO: Usa this.mockData.participacao_ceia
-            const participouCeia = this.mockData.participacao_ceia.some(ceia =>
-                ceia.pessoaId === membro.id &&
-                parseInt(ceia.ano, 10) === anoNumerico &&
-                parseInt(ceia.mes, 10) === mesNumerico
-            );
-
-            return {
-                id: membro.id,
-                nome: membro.nomeCompleto, // CORREÇÃO: Usa 'nomeCompleto'
-                dizimista: entregouDizimo,
-                tomouCeia: participouCeia
-            };
-        });
-
-        return { success: true, data: dadosControle };
     }
     
     async setParticipacaoCeia(userId, ano, mes, participou) {

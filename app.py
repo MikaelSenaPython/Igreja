@@ -1,17 +1,18 @@
-# app.py (Este é o seu novo arquivo de servidor principal)
+# app.py
 
 from flask import Flask
 from flask_cors import CORS
 
-# Importe os blueprints dos seus arquivos
-from api import entradas, usuarios
+# IMPORTAR O NOVO ARQUIVO 'PESSOAS'
+from api import usuarios, entradas, pessoas 
 
 app = Flask(__name__)
-CORS(app) # Configure o CORS aqui, para todo o app
+CORS(app) 
 
-# Registre os blueprints
+# REGISTRAR O NOVO ARQUIVO 'PESSOAS'
 app.register_blueprint(usuarios.bp)
 app.register_blueprint(entradas.bp)
+app.register_blueprint(pessoas.bp) # <-- ADICIONE ESTA LINHA
 
 @app.route('/')
 def hello():
