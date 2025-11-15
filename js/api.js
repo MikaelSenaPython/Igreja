@@ -411,39 +411,40 @@ class ApiService {
 
     async getEntradas(filters = {}) {
         try {
-            // 1. Busca os dados REAIS de pessoas e entradas ao mesmo tempo
-            const [entradasResponse, pessoasResponse] = await Promise.all([
+            // 1. Busca todos os dados reais de uma vez
+            const [entradasResponse, pessoasResponse, usuariosResponse] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/entradas`),
-                this.getPessoas() // Reutiliza a função que já busca do backend
+                this.getPessoas(), // Busca pessoas reais
+                this.getUsers()    // Busca usuários reais
             ]);
 
-            if (!entradasResponse.ok) {
-                throw new Error('Erro de rede ao buscar entradas.');
-            }
-            if (!pessoasResponse.success) {
-                throw new Error('Erro ao buscar lista de pessoas para o mapeamento.');
-            }
+            if (!entradasResponse.ok) throw new Error('Erro de rede ao buscar entradas.');
+            if (!pessoasResponse.success) throw new Error('Erro ao buscar lista de pessoas.');
+            if (!usuariosResponse.success) throw new Error('Erro ao buscar lista de usuários.');
 
             const fetchedEntradas = await entradasResponse.json();
-            const todasPessoas = pessoasResponse.data; // Lista real de pessoas
+            const todasPessoas = pessoasResponse.data;
+            const todosUsuarios = usuariosResponse.data; // Lista real de usuários
 
-            // 2. Mapeia os dados usando a lista de pessoas REAL
+            // 2. Mapeia os dados usando as listas REAIS
             let entradas = fetchedEntradas.map(entrada => {
-                // CORREÇÃO: Usa a 'todasPessoas' (do Google Sheets)
+
+                // Mapeia o MEMBRO (pela lista de pessoas)
                 const membro = todasPessoas.find(p => p.id === entrada.membroId);
 
-                // (O resto da sua lógica de mapeamento estava no mockData, 
-                // então vamos recriá-la aqui. Assumindo que você ainda tem 
-                // o mockData para 'projetos' e 'ministerios' por enquanto)
+                // Mapeia o REGISTRADO POR (pela lista de usuários)
+                const registrador = todosUsuarios.find(u => u.id === entrada.registradoPor);
+
+                // (Projetos e Ministérios ainda vêm do mockData por enquanto)
                 const projeto = this.mockData.projetos.find(p => p.id === entrada.projetoId);
                 const ministerio = this.mockData.ministerios.find(m => m.id === entrada.ministerioId);
-                const registrador = this.mockData.users.find(u => u.id === entrada.registradoPor);
 
                 return {
                     ...entrada,
                     nomeMembro: membro?.nomeCompleto || 'Doador Anônimo',
                     nomeProjeto: projeto?.nome || null,
                     nomeMinisterio: ministerio?.nome || 'Caixa Geral',
+                    // CORRIGIDO: Usa o nome do usuário real
                     registradoPor: registrador?.username || 'Sistema Antigo'
                 };
             });
@@ -508,7 +509,7 @@ class ApiService {
         }
     }
 
-    async updateEntrada(id, entradaData) {
+    async updateEntrada(id, entradaData, username) { // <-- 1. ADICIONE AQUI
         // ATENÇÃO: O Python espera o ID DENTRO do objeto de dados
         const dataToSend = {
             ...entradaData,
@@ -533,7 +534,7 @@ class ApiService {
             }
 
             // (Opcional) Adicionar log
-            this._addLog('UsuarioLogado', 'ENTRADA_ALTERADA', `Entrada ID ${id} foi alterada.`);
+            this._addLog(username, 'ENTRADA_ALTERADA', `Entrada ID ${id} foi alterada.`); // <-- 2. USE A VARIÁVEL AQUI
             this._saveData(); // Salva o log
 
             return { success: true, data: responseData.data };
@@ -544,7 +545,7 @@ class ApiService {
         }
     }
 
-    async deleteEntrada(id) {
+    async deleteEntrada(id, username) { // <-- 1. ADICIONE AQUI
         try {
             // Envia a requisição de exclusão para a API (método DELETE)
             const response = await fetch(`${API_BASE_URL}/api/entradas/${id}`, {
@@ -559,7 +560,7 @@ class ApiService {
             }
 
             // (Opcional) Adicionar log
-            this._addLog('UsuarioLogado', 'ENTRADA_EXCLUÍDA', `Entrada ID ${id} foi excluída.`);
+            this._addLog(username, 'ENTRADA_EXCLUÍDA', `Entrada ID ${id} foi excluída.`); // <-- 2. USE A VARIÁVEL AQUI
             this._saveData(); // Salva o log
 
             return { success: true };

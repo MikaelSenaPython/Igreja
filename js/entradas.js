@@ -271,7 +271,7 @@ class EntradasManager {
         try {
             setButtonLoading(saveBtn, true);
             const response = id
-                ? await this.app.api.updateEntrada(id, entradaData)
+                ? await this.app.api.updateEntrada(id, entradaData, this.app.currentUser.username) // <-- CORRIGIDO
                 : await this.app.api.createEntrada(entradaData, this.app.currentUser.username);
 
             if (response.success) {
@@ -299,7 +299,7 @@ class EntradasManager {
         if (!confirm(`Tem certeza que deseja excluir esta entrada de ${formatCurrency(entrada.valor)}?`)) return;
 
         try {
-            const response = await this.app.api.deleteEntrada(entradaId);
+            const response = await this.app.api.deleteEntrada(entradaId, this.app.currentUser.username); // <-- CORRIGIDO
             if (response.success) {
                 this.app.showToast('Entrada excluída com sucesso!', 'success');
                 this.loadData();
